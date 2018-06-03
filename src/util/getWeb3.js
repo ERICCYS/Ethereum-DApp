@@ -9,27 +9,35 @@ import Web3 from 'web3'
 */
 
 let getWeb3 = new Promise(function (resolve, reject) {
-  // Check for injected web3 (mist/metamask)
+  // Check for injected web3 (metamask)
   var web3js = window.web3
   if (typeof web3js !== 'undefined') {
     var web3 = new Web3(web3js.currentProvider)
     console.log('The web3 we get here')
     console.log(web3)
     resolve({
-      // injectedWeb3: web3.isConnected(),
-      injectedWeb3: true,
       web3 () {
         return web3
       }
     })
   } else {
-    // web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545')) GANACHE FALLBACK
-    reject(new Error('Unable to connect to Metamask'))
+    reject(new Error('Unable to get Web3'))
   }
 })
   .then(result => {
-    console.log('first result')
-    console.log(result)
+    return new Promise(function (resolve, reject) {
+      // Get the connection status of Metamask
+      result.web3().eth.net.isListening((err,injectedWeb3) => {
+        if(err) {
+          reject(new Error ('Unable to connect to Metamask'))
+        } else {
+          result = Object.assign({}, result, {injectedWeb3})
+          resolve(result)
+        }
+      })
+    })
+  })
+  .then(result => {
     return new Promise(function (resolve, reject) {
       // Retrieve network ID
       result.web3().eth.net.getId((err, networkId) => {
@@ -45,8 +53,6 @@ let getWeb3 = new Promise(function (resolve, reject) {
     })
   })
   .then(result => {
-    console.log('second result')
-    console.log(result)
     return new Promise(function (resolve, reject) {
       // Retrieve coinbase
       result.web3().eth.getCoinbase((err, coinbase) => {
@@ -60,8 +66,6 @@ let getWeb3 = new Promise(function (resolve, reject) {
     })
   })
   .then(result => {
-    console.log('third result')
-    console.log(result)
     return new Promise(function (resolve, reject) {
       // Retrieve balance for coinbase
       result.web3().eth.getBalance(result.coinbase, (err, balance) => {
