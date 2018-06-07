@@ -25,7 +25,6 @@ export default {
   name: 'operations',
   mounted () {
     console.log('dispatching getContractInstance')
-    // console.log(this.$store.state.web3)
     this.$store.dispatch('getContractInstance')
   },
   data () {
@@ -45,7 +44,6 @@ export default {
           if (err) {
             console.log(err)
           } else {
-            // console.log(result.c[0])
             this.showbalance = true
             this.balance = result.c[0]
             this.retrieve_word = 'Hide'
